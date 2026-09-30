@@ -199,6 +199,37 @@ async function fetchLatestXFromYahoo() {
     .replace(/\\\//g, "/")
     .replace(/&amp;/g, "&");
 
+  const nextMatch = htmlRaw.match(
+    /<script[^>]+id=["']__NEXT_DATA__["'][^>]*>([\s\S]*?)<\/script>/i
+  );
+  if (nextMatch) {
+    try {
+      const yahooData = JSON.parse(nextMatch[1]);
+      const records = [];
+      const seen = new Set();
+      (function walk(value) {
+        if (!value || typeof value !== "object" || seen.has(value)) return;
+        seen.add(value);
+        if (
+          !Array.isArray(value) &&
+          typeof value.tweetId === "string" &&
+          (typeof value.body === "string" || typeof value.imageUrl === "string")
+        ) {
+          records.push(value);
+        }
+        for (const child of Array.isArray(value) ? value : Object.values(value)) {
+          walk(child);
+        }
+      })(yahooData);
+      console.warn(
+        "Yahoo tweet records sample:",
+        JSON.stringify(records.slice(0, 12))
+      );
+    } catch (err) {
+      console.warn("Yahoo __NEXT_DATA__ parse diagnostic failed:", err?.message || err);
+    }
+  }
+
   const re = new RegExp(
     "https?:\\\\/\\\\/(?:x|twitter)\\\\.com\\\\/" +
       X_HANDLE +
