@@ -298,7 +298,72 @@ async function fetchLatestXFromYahoo() {
   );
 }
 
+function findFxStatuses(value, out = [], seen = new Set()) {
+  if (!value || typeof value !== "object" || seen.has(value)) return out;
+  seen.add(value);
+
+  if (
+    !Array.isArray(value) &&
+    String(value.type || "") === "status" &&
+    /^\d+$/.test(String(value.id || "")) &&
+    typeof value.text === "string"
+  ) {
+    out.push(value);
+  }
+
+  for (const child of Array.isArray(value) ? value : Object.values(value)) {
+    findFxStatuses(child, out, seen);
+  }
+  return out;
+}
+
+async function fetchLatestXFromFxTwitter() {
+  const payload = await fetchJson(
+    "https://api.fxtwitter.com/2/profile/" +
+      encodeURIComponent(X_HANDLE) +
+      "/statuses?count=10"
+  );
+
+  const statuses = findFxStatuses(payload).filter((status) => {
+    const handle = String(
+      status?.author?.screen_name ||
+      status?.creator?.screen_name ||
+      ""
+    ).toLowerCase();
+    return !handle || handle === X_HANDLE.toLowerCase();
+  });
+
+  if (!statuses.length) {
+    throw new Error("FxTwitter returned no statuses");
+  }
+
+  statuses.sort((a, b) => {
+    const ai = BigInt(a.id);
+    const bi = BigInt(b.id);
+    return ai === bi ? 0 : ai > bi ? -1 : 1;
+  });
+
+  const status = statuses[0];
+  return {
+    platform: "x",
+    excerpt: normalizeText(status.text, 220) || "Xの最新投稿をチェック。",
+    time: formatTokyoDate(status.created_at) || "最新",
+    url: String(status.url || "").trim() ||
+      ("https://x.com/" + X_HANDLE + "/status/" + status.id),
+    thumbnail: mediaThumbnail(status) || "",
+  };
+}
+
 async function fetchLatestX() {
+  try {
+    return await fetchLatestXFromFxTwitter();
+  } catch (err) {
+    console.warn(
+      "FxTwitter profile statuses failed; trying X syndication:",
+      err?.message || err
+    );
+  }
+
   try {
     const timelineUrl =
       "https://syndication.twitter.com/srv/timeline-profile/screen-name/" +
