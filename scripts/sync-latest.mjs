@@ -189,91 +189,84 @@ function xPostFromTweet(tweet, fallbackId = "") {
   };
 }
 
-async function fetchLatestXFromYahoo() {
-  const q = encodeURIComponent("from:" + X_HANDLE);
-  const htmlRaw = await fetchText(
-    "https://search.yahoo.co.jp/realtime/search?p=" + q + "&ei=UTF-8"
-  );
-  const html = htmlRaw
-    .replace(/\\u002F/gi, "/")
-    .replace(/\\\//g, "/")
-    .replace(/&amp;/g, "&");
-
-  const nextMatch = htmlRaw.match(
+function extractYahooTweetRecords(htmlRaw) {
+  const match = htmlRaw.match(
     /<script[^>]+id=["']__NEXT_DATA__["'][^>]*>([\s\S]*?)<\/script>/i
   );
-  if (nextMatch) {
+  if (!match) return [];
+
+  const data = JSON.parse(match[1]);
+  const records = [];
+  const seen = new Set();
+
+  (function walk(value) {
+    if (!value || typeof value !== "object" || seen.has(value)) return;
+    seen.add(value);
+
+    if (
+      !Array.isArray(value) &&
+      /^\d+$/.test(String(value.tweetId || "")) &&
+      (typeof value.body === "string" || typeof value.imageUrl === "string")
+    ) {
+      records.push(value);
+    }
+
+    for (const child of Array.isArray(value) ? value : Object.values(value)) {
+      walk(child);
+    }
+  })(data);
+
+  return records;
+}
+
+async function fetchLatestXFromYahoo() {
+  const queries = [
+    "@" + X_HANDLE,
+    X_HANDLE,
+    '"Club D.O.A/大宮ホストクラブ"',
+    '"Club D.O.A" 大宮ホストクラブ',
+  ];
+
+  const candidateIds = [];
+  const yahooFallback = new Map();
+
+  for (const query of queries) {
     try {
-      const yahooData = JSON.parse(nextMatch[1]);
-      const records = [];
-      const seen = new Set();
-      (function walk(value) {
-        if (!value || typeof value !== "object" || seen.has(value)) return;
-        seen.add(value);
-        if (
-          !Array.isArray(value) &&
-          typeof value.tweetId === "string" &&
-          (typeof value.body === "string" || typeof value.imageUrl === "string")
-        ) {
-          records.push(value);
-        }
-        for (const child of Array.isArray(value) ? value : Object.values(value)) {
-          walk(child);
-        }
-      })(yahooData);
-      console.warn(
-        "Yahoo tweet records sample:",
-        JSON.stringify(records.slice(0, 12))
+      const html = await fetchText(
+        "https://search.yahoo.co.jp/realtime/search?p=" +
+          encodeURIComponent(query) +
+          "&ei=UTF-8"
       );
+      const records = extractYahooTweetRecords(html);
+      for (const record of records) {
+        const id = String(record.tweetId || "");
+        if (!/^\d+$/.test(id)) continue;
+        if (!candidateIds.includes(id)) candidateIds.push(id);
+        yahooFallback.set(id, record);
+      }
     } catch (err) {
-      console.warn("Yahoo __NEXT_DATA__ parse diagnostic failed:", err?.message || err);
+      console.warn(
+        "Yahoo realtime query failed:",
+        query,
+        err?.message || err
+      );
     }
   }
 
-  const re = new RegExp(
-    "https?:\\\\/\\\\/(?:x|twitter)\\\\.com\\\\/" +
-      X_HANDLE +
-      "\\\\/status\\\\/(\\\\d+)",
-    "gi"
-  );
-  const ids = [];
-  let m;
-  while ((m = re.exec(html))) ids.push(m[1]);
-
-  const relative = new RegExp(
-    "\\\\/" + X_HANDLE + "\\\\/status\\\\/(\\\\d+)",
-    "gi"
-  );
-  while ((m = relative.exec(html))) ids.push(m[1]);
-
-  const unique = [...new Set(ids)].filter((id) => /^\\d+$/.test(id));
-  if (!unique.length) {
-    const compact = htmlRaw.replace(/\s+/g, " ");
-    const lower = compact.toLowerCase();
-    const needles = [X_HANDLE.toLowerCase(), "tweetid", "status/", "tweet", "__next_data__"];
-    for (const needle of needles) {
-      const positions = [];
-      let p = 0;
-      while ((p = lower.indexOf(needle, p)) >= 0) {
-        positions.push(p);
-        p += needle.length;
-      }
-      console.warn("Yahoo diagnostic " + needle + " count=" + positions.length);
-      for (const pos of positions.slice(-4)) {
-        console.warn(compact.slice(Math.max(0, pos - 220), pos + 700));
-      }
-    }
-    throw new Error("Yahoo realtime returned no X post ids");
+  if (!candidateIds.length) {
+    throw new Error("Yahoo realtime returned no candidate X post ids");
   }
 
-  unique.sort((a, b) => {
+  candidateIds.sort((a, b) => {
     const ai = BigInt(a);
     const bi = BigInt(b);
     return ai === bi ? 0 : ai > bi ? -1 : 1;
   });
 
+  const matches = [];
   let lastErr;
-  for (const id of unique.slice(0, 8)) {
+
+  for (const id of candidateIds.slice(0, 40)) {
     try {
       const tweet = await hydrateTweetById(id);
       if (
@@ -282,16 +275,26 @@ async function fetchLatestXFromYahoo() {
         String(tweet?.user?.screen_name || "").toLowerCase() ===
           X_HANDLE.toLowerCase()
       ) {
-        return xPostFromTweet(tweet, id);
+        matches.push(tweet);
+        if (matches.length >= 3) break;
       }
     } catch (err) {
       lastErr = err;
     }
   }
 
+  if (matches.length) {
+    matches.sort((a, b) => {
+      const ai = BigInt(a.id_str);
+      const bi = BigInt(b.id_str);
+      return ai === bi ? 0 : ai > bi ? -1 : 1;
+    });
+    return xPostFromTweet(matches[0], matches[0].id_str);
+  }
+
   throw new Error(
-    "X tweet hydration failed after Yahoo lookup: " +
-      (lastErr?.message || "unknown")
+    "No matching X account post found via Yahoo realtime" +
+      (lastErr ? ": " + (lastErr.message || lastErr) : "")
   );
 }
 
