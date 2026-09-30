@@ -337,6 +337,23 @@ async function fetchLatestXFromFxTwitter() {
     throw new Error("FxTwitter returned no statuses");
   }
 
+  console.warn(
+    "FxTwitter status sample:",
+    JSON.stringify(
+      statuses.slice(0, 6).map((s) => ({
+        id: s.id,
+        text: String(s.text || "").slice(0, 120),
+        created_at: s.created_at,
+        keys: Object.keys(s),
+        replying_to: s.replying_to,
+        in_reply_to_status_id: s.in_reply_to_status_id,
+        reply_to: s.reply_to,
+        reposted_by: s.reposted_by,
+        media: s.media
+      }))
+    )
+  );
+
   statuses.sort((a, b) => {
     const ai = BigInt(a.id);
     const bi = BigInt(b.id);
