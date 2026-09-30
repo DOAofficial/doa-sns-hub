@@ -471,6 +471,17 @@ h1,h2,h3,p{ margin:0; }
 @keyframes fadeIn{ from{ opacity:0; } to{ opacity:1; } }
 @keyframes pulseLine{ 0%,100%{ opacity:.2; } 50%{ opacity:1; } }
 
+/* iOS/LINE等のアプリ内ブラウザで初回表示アニメーションが停止しても、
+   ヒーロー本体が透明のまま残らないよう、表示を常時保証する。 */
+.hero .orbit,
+.hero .hero-tagline,
+.hero .hero-sub,
+.hero .hero-platforms,
+.hero .hero-activity,
+.hero .scroll-cue{
+  opacity: 1;
+}
+
 
 /* ---------------------------------------------------------------------------
    4. 共通セクション間隔
