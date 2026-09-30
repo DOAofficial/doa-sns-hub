@@ -29,9 +29,11 @@
   }
 
   /* ---------- 公開後の最新投稿データを読み込む ----------
-     1) Google Apps Script API を最優先
-     2) APIに接続できない場合は同一サイト内の latest-posts.json
-     3) それも失敗した場合は config.js の CONFIG.latestPosts
+     1) GitHub上の自動同期ミラー latest-posts.json を最優先
+        （Mac / iPhone で同じデータを確実に読むため）
+     2) 同一サイト内の latest-posts.json
+     3) Google Apps Script API
+     4) すべて失敗した場合は config.js の CONFIG.latestPosts
 
      ※ file:// のローカル表示はブラウザの通信制限を避けるため、
         config.js のフォールバック表示を使います。 */
@@ -134,20 +136,23 @@
   function loadRemoteLatest() {
     if (window.location.protocol === "file:") return Promise.resolve(false);
 
+    var mirrorUrl = "https://raw.githubusercontent.com/DOAofficial/doa-sns-hub/main/latest-posts.json";
     var apiUrl = CONFIG.automation && CONFIG.automation.latestPostsApi;
-    var apiAttempt = apiUrl
-      ? fetchLatestJson(apiUrl).then(function (payload) {
-          if (!applyLatestPayload(payload)) throw new Error("Apps Script API returned no usable items");
-          return true;
-        })
-      : Promise.reject(new Error("Apps Script API URL is not configured"));
 
-    return apiAttempt.catch(function (apiErr) {
-      if (window.console && console.warn) console.warn("[SNS HUB] Apps Script API fallback:", apiErr);
-      return fetchLatestJson("latest-posts.json").then(function (payload) {
-        if (!applyLatestPayload(payload)) throw new Error("latest-posts.json returned no usable items");
+    function usePayload(url, label) {
+      return fetchLatestJson(url).then(function (payload) {
+        if (!applyLatestPayload(payload)) throw new Error(label + " returned no usable items");
         return true;
       });
+    }
+
+    return usePayload(mirrorUrl, "GitHub mirror").catch(function (mirrorErr) {
+      if (window.console && console.warn) console.warn("[SNS HUB] GitHub mirror fallback:", mirrorErr);
+      return usePayload("latest-posts.json", "local latest-posts.json");
+    }).catch(function (localErr) {
+      if (window.console && console.warn) console.warn("[SNS HUB] local JSON fallback:", localErr);
+      if (!apiUrl) throw new Error("Apps Script API URL is not configured");
+      return usePayload(apiUrl, "Apps Script API");
     }).catch(function (fallbackErr) {
       if (window.console && console.warn) console.warn("[SNS HUB] latest data fallback to config.js:", fallbackErr);
       return false;
