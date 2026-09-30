@@ -152,7 +152,7 @@ function mediaThumbnail(tweet) {
         if (
           typeof v === "string" &&
           /^(https?:\/\/)/.test(v) &&
-          /(media_url|preview_image|pbs\.twimg\.com\/media)/i.test(key + " " + v)
+          /(media_url|preview_image|thumbnail|poster|pbs\.twimg\.com\/media)/i.test(key + " " + v)
         ) {
           return v;
         }
@@ -321,7 +321,7 @@ async function fetchLatestXFromFxTwitter() {
   const payload = await fetchJson(
     "https://api.fxtwitter.com/2/profile/" +
       encodeURIComponent(X_HANDLE) +
-      "/statuses?count=10"
+      "/statuses?count=20&with_replies=0"
   );
 
   const statuses = findFxStatuses(payload).filter((status) => {
