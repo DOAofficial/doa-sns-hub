@@ -572,6 +572,22 @@ h1,h2,h3,p{ margin:0; }
   object-position:center;
 }
 .media-thumb-icon{ position:relative; z-index:1; display:flex; align-items:center; justify-content:center; }
+.media-thumb-text{
+  position:absolute; inset:0;
+  z-index:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18%;
+  text-align:left;
+  font-size:clamp(12px, 1.1vw, 18px);
+  line-height:1.75;
+  color:rgba(245,242,234,.92);
+  background:
+    radial-gradient(circle at 50% 35%, rgba(255,255,255,.045), transparent 44%),
+    linear-gradient(160deg, rgba(255,255,255,.025), rgba(255,255,255,0));
+  overflow:hidden;
+}
 .media-thumb-img + .media-badge{ z-index:2; }
 .media-badge{
   position:absolute; top:10px; right:10px;
