@@ -459,6 +459,19 @@ h1,h2,h3,p{ margin:0; }
   .hero-platforms{ margin-top: 16px; gap: 7px; }
   .hero-activity{ margin-top: 14px; }
 
+  /* LINE等のiOS内蔵ブラウザでCSSアニメーションが止まり、
+     ヒーロー要素が opacity:0 のまま残るケースを防ぐ。 */
+  .hero-eyebrow,
+  .orbit,
+  .hero-tagline,
+  .hero-sub,
+  .hero-platforms,
+  .hero-activity,
+  .scroll-cue{
+    opacity: 1 !important;
+    animation: none !important;
+  }
+
   /* SCROLL表示を通常の流れに戻し、absolute配置による「同時運用中」との重なりを根本的に解消 */
   .scroll-cue{
     position: static;
