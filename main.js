@@ -181,6 +181,11 @@
         fallback();
       });
       box.appendChild(img);
+    } else if (post && (key === "threads" || key === "x") && post.excerpt) {
+      box.appendChild(el("div", {
+        class: "media-thumb-text",
+        text: post.excerpt
+      }));
     } else {
       fallback();
     }
