@@ -217,16 +217,21 @@ async function fetchLatestXFromYahoo() {
 
   const unique = [...new Set(ids)].filter((id) => /^\\d+$/.test(id));
   if (!unique.length) {
-    const compact = htmlRaw.replace(/\\s+/g, " ");
-    const handlePos = compact.toLowerCase().indexOf(X_HANDLE.toLowerCase());
-    const tweetPos = compact.toLowerCase().indexOf("tweet");
-    const statusPos = compact.toLowerCase().indexOf("status");
-    const pos = handlePos >= 0 ? handlePos : tweetPos >= 0 ? tweetPos : statusPos;
-    console.warn(
-      "Yahoo realtime diagnostic:",
-      "length=" + htmlRaw.length,
-      pos >= 0 ? compact.slice(Math.max(0, pos - 300), pos + 1200) : compact.slice(0, 1200)
-    );
+    const compact = htmlRaw.replace(/\s+/g, " ");
+    const lower = compact.toLowerCase();
+    const needles = [X_HANDLE.toLowerCase(), "tweetid", "status/", "tweet", "__next_data__"];
+    for (const needle of needles) {
+      const positions = [];
+      let p = 0;
+      while ((p = lower.indexOf(needle, p)) >= 0) {
+        positions.push(p);
+        p += needle.length;
+      }
+      console.warn("Yahoo diagnostic " + needle + " count=" + positions.length);
+      for (const pos of positions.slice(-4)) {
+        console.warn(compact.slice(Math.max(0, pos - 220), pos + 700));
+      }
+    }
     throw new Error("Yahoo realtime returned no X post ids");
   }
 
