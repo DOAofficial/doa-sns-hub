@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ja">
+<!-- BUILD: D.O.A SNS HUB mobile-sync v3 / 2026-09-28 -->
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>大宮ホストクラブ｜D.O.A SNS HUB</title>
+<meta name="description" content="大宮ホストクラブ D.O.A の Instagram・TikTok・YouTube・X・Threads を全部チェック">
+<meta name="theme-color" content="#0b0b0c">
+
+<!-- OGP（SNSでシェアされた時の表示） -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="大宮ホストクラブ｜D.O.A SNS HUB">
+<meta property="og:description" content="大宮ホストクラブ D.O.A の Instagram・TikTok・YouTube・X・Threads を全部チェック">
+<meta property="og:image" content="">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<noscript>
+  <div class="noscript-banner">
+    <p>JavaScriptが無効なため、簡易表示になっています。各SNSはこちらから直接どうぞ。</p>
+    <ul class="noscript-links">
+      <li><a href="https://www.instagram.com/of.doa">Instagram</a></li>
+      <li><a href="https://www.tiktok.com/@d.o.a._official">TikTok</a></li>
+      <li><a href="https://youtube.com/@d.o.a5924">YouTube</a></li>
+      <li><a href="https://x.com/doa07382711">X</a></li>
+      <li><a href="https://www.threads.com/@of.doa">Threads</a></li>
+    </ul>
+  </div>
+</noscript>
+
+<!-- ============== ヘッダー ============== -->
+<header class="site-header">
+  <a href="index.html" class="brand" id="site-logo">
+    <span data-brand-name>D.O.A</span>
+    <small data-brand-sub>SNS HUB</small>
+  </a>
+
+  <nav class="nav-desktop" aria-label="メインナビゲーション">
+    <a href="#sns" data-nav="sns">SNS</a>
+    <a href="#latest" data-nav="latest">LATEST</a>
+    <a href="#cast" data-nav="cast">CAST</a>
+    <a href="#recruit" data-nav="recruit">RECRUIT</a>
+  </nav>
+
+  <div class="nav-actions">
+    <a href="#follow-all" class="btn btn-primary" data-nav="allSns" style="padding:10px 18px;font-size:12.5px;">ALL SNS</a>
+    <button id="menu-toggle" class="menu-toggle" aria-label="メニューを開く" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<!-- ============== モバイルメニュー ============== -->
+<nav id="mobile-menu" class="mobile-menu" aria-label="モバイルメニュー">
+  <a href="#sns" data-nav="sns">SNS</a>
+  <a href="#latest" data-nav="latest">Latest</a>
+  <a href="#cast" data-nav="cast">Cast</a>
+  <a href="#recruit" data-nav="recruit">Recruit</a>
+  <div class="mobile-meta">
+    <a href="#follow-all" class="btn btn-primary" data-nav="allSnsMobile">ALL SNSをフォロー</a>
+  </div>
+</nav>
+
+<main>
+
+  <!-- ============== ヒーロー ============== -->
+  <section class="hero">
+    <div class="hero-noise" aria-hidden="true"></div>
+
+    <p class="eyebrow hero-eyebrow" id="hero-eyebrow">OMIYA HOST CLUB</p>
+
+    <div class="orbit">
+      <svg viewBox="0 0 300 300" aria-hidden="true">
+        <g class="orbit-ring">
+          <circle class="orbit-ring-line" cx="150" cy="150" r="120" fill="none" stroke="var(--bone)" stroke-opacity=".14" stroke-width="1"/>
+          <g id="orbit-nodes"></g>
+        </g>
+        <circle cx="150" cy="150" r="2.4" fill="var(--bone)"/>
+      </svg>
+      <div class="orbit-wordmark">
+        <span class="word" id="hero-word">D.O.A</span>
+        <span class="sub" id="hero-subword">SNS HUB</span>
+      </div>
+    </div>
+
+    <h1 class="hero-tagline h-jp" id="hero-tagline">D.O.A公式SNS</h1>
+    <p class="hero-sub" id="hero-subtagline">大宮ホストクラブ D.O.A の Instagram・TikTok・YouTube・X・Threads を全部チェック</p>
+
+    <div class="hero-platforms" id="hero-platforms"></div>
+
+    <div class="status-pill hero-activity">
+      <span class="dot"></span>
+      <span id="hero-activity-text">5 SNS 同時運用中</span>
+    </div>
+
+    <div class="scroll-cue" aria-hidden="true">
+      <span>SCROLL</span>
+      <span class="line"></span>
+    </div>
+  </section>
+
+  <!-- ============== SNS 5媒体 ============== -->
+  <section id="sns" class="section">
+    <div class="container">
+      <div class="section-head reveal">
+        <p class="eyebrow" id="sns-eyebrow">05 SNS, ALL HERE</p>
+        <h2 class="h-jp" id="sns-heading">各SNSはこちらから</h2>
+        <p id="sns-body">Instagram・TikTok・YouTube・X・Threads<br>それぞれ役割が違うから全部チェックする価値がある</p>
+      </div>
+      <div id="sns-grid" class="sns-grid"></div>
+    </div>
+  </section>
+
+  <!-- ============== FOLLOW ALL SNS ============== -->
+  <section id="follow-all" class="section-tight">
+    <div class="container">
+      <div class="follow-all reveal">
+        <p class="eyebrow" id="follow-eyebrow">FOLLOW ALL SNS</p>
+        <h2 class="h-jp" id="follow-heading">D.O.A 公式SNS一覧</h2>
+        <p id="follow-body">D.O.Aの情報を5つのSNSで発信中</p>
+        <div id="follow-row" class="follow-row"></div>
+        <p class="follow-note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+          <span id="follow-note-text">タップすると各SNSの公式ページに移動します</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== LATEST SOCIALS ============== -->
+  <section id="latest" class="section">
+    <div class="container">
+      <div class="section-head reveal">
+        <div class="section-head-top">
+          <p class="eyebrow" id="latest-eyebrow">LATEST SOCIALS</p>
+          <span class="status-pill"><span class="dot"></span><span id="latest-status-pill">5 SNS 同時更新中</span></span>
+        </div>
+        <h2 class="h-jp" id="latest-heading">最新の投稿を<br class="mobile-break">まとめてチェック</h2>
+        <p id="latest-body">5つのSNSに投稿された最新の内容を一覧できます</p>
+      </div>
+      <div id="latest-track-wrap" class="latest-track-wrap">
+        <div id="latest-track" class="latest-track"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== CAST SNS ============== -->
+  <section id="cast" class="section">
+    <div class="container">
+      <div class="section-head reveal">
+        <p class="eyebrow" id="cast-eyebrow">CAST SNS</p>
+        <h2 class="h-jp" id="cast-heading">各キャストSNSは<br class="mobile-break">こちらから</h2>
+        <p id="cast-body">キャストごとのSNSをまとめてチェック<br>タップすると個人ページに移動します</p>
+      </div>
+      <div id="cast-grid" class="cast-grid"></div>
+    </div>
+  </section>
+
+  <!-- ============== RECRUIT ============== -->
+  <section id="recruit" class="section">
+    <div class="container">
+      <div class="recruit reveal">
+        <p class="eyebrow" id="recruit-eyebrow">CAST RECRUIT</p>
+        <h2 class="h-jp" id="recruit-headline">D.O.Aで新しい自分を始める</h2>
+        <p id="recruit-body">未経験からでも安心の教育体制<br>万全のサポート体制をお約束します</p>
+        <a href="#" id="recruit-btn" target="_blank" rel="noopener" class="btn btn-primary" style="padding:16px 32px;">求人情報を見る</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============== フッター ============== -->
+<footer class="site-footer">
+  <div class="container footer-top" style="padding:0;">
+    <div class="footer-brand">
+      <div class="h-display" data-brand-name>D.O.A</div>
+      <p><span data-brand-area>OMIYA</span> HOST CLUB / <span data-brand-sub>SNS HUB</span></p>
+    </div>
+    <div class="footer-links">
+      <div>
+        <span id="footer-menu-label">Menu</span>
+        <a href="#sns" data-nav="sns">SNS</a>
+        <a href="#latest" data-nav="latest">Latest</a>
+        <a href="#cast" data-nav="cast">Cast</a>
+        <a href="#recruit" data-nav="recruit">Recruit</a>
+      </div>
+    </div>
+    <div id="footer-social" class="footer-social"></div>
+  </div>
+  <div class="container footer-bottom" style="padding:0;">
+    <span>&copy; <span data-brand-name>D.O.A</span> <span data-brand-sub>SNS HUB</span></span>
+    <span id="footer-disclaimer">本サイトは各SNS公式とは関係のない非公式の入口ページです。</span>
+  </div>
+</footer>
+
+<!-- ============== 予約フローティングボタン ============== -->
+<a id="reserve-fab" href="#" target="_blank" rel="noopener" class="reserve-fab">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12h16M4 12l6-6M4 12l6 6"/></svg>
+  <span id="reserve-fab-label" class="reserve-fab-label-full">ご予約・お問い合わせ</span>
+  <span id="reserve-fab-label-short" class="reserve-fab-label-short">ご予約</span>
+</a>
+
+<script src="config.js"></script>
+<script src="main.js"></script>
+</body>
+</html>
