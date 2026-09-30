@@ -330,29 +330,21 @@ async function fetchLatestXFromFxTwitter() {
       status?.creator?.screen_name ||
       ""
     ).toLowerCase();
-    return !handle || handle === X_HANDLE.toLowerCase();
+
+    const isSameAccount = !handle || handle === X_HANDLE.toLowerCase();
+    const isReply = Boolean(
+      status?.replying_to ||
+      status?.in_reply_to_status_id ||
+      status?.reply_to
+    );
+    const isRepostWrapper = Boolean(status?.reposted_by);
+
+    return isSameAccount && !isReply && !isRepostWrapper;
   });
 
   if (!statuses.length) {
-    throw new Error("FxTwitter returned no statuses");
+    throw new Error("FxTwitter returned no original statuses");
   }
-
-  console.warn(
-    "FxTwitter status sample:",
-    JSON.stringify(
-      statuses.slice(0, 6).map((s) => ({
-        id: s.id,
-        text: String(s.text || "").slice(0, 120),
-        created_at: s.created_at,
-        keys: Object.keys(s),
-        replying_to: s.replying_to,
-        in_reply_to_status_id: s.in_reply_to_status_id,
-        reply_to: s.reply_to,
-        reposted_by: s.reposted_by,
-        media: s.media
-      }))
-    )
-  );
 
   statuses.sort((a, b) => {
     const ai = BigInt(a.id);
