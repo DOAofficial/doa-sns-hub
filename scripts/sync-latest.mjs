@@ -168,35 +168,120 @@ function mediaThumbnail(tweet) {
   return walk(tweet);
 }
 
-async function fetchLatestX() {
-  const timelineUrl = `https://syndication.twitter.com/srv/timeline-profile/screen-name/${encodeURIComponent(X_HANDLE)}`;
-  const html = await fetchText(timelineUrl);
-  const match = html.match(/<script[^>]+id=["']__NEXT_DATA__["'][^>]*>([\s\S]*?)<\/script>/i);
-  if (!match) throw new Error("X timeline __NEXT_DATA__ not found");
+async function hydrateTweetById(id) {
+  return await fetchJson(
+    "https://cdn.syndication.twimg.com/tweet-result?id=" +
+      encodeURIComponent(id) +
+      "&lang=ja&token=" +
+      tweetToken(id)
+  );
+}
 
-  const nextData = JSON.parse(match[1]);
-  const baseTweet = newestTweet(findTweetCandidates(nextData));
-  if (!baseTweet) throw new Error("No X post found in timeline");
-
-  let tweet = baseTweet;
-  try {
-    const id = String(baseTweet.id_str);
-    const hydrated = await fetchJson(
-      `https://cdn.syndication.twimg.com/tweet-result?id=${encodeURIComponent(id)}&lang=ja&token=${tweetToken(id)}`
-    );
-    if (hydrated && hydrated.__typename !== "TweetTombstone") tweet = hydrated;
-  } catch (err) {
-    console.warn("X hydration failed; using timeline data:", err?.message || err);
-  }
-
-  const id = String(tweet.id_str || baseTweet.id_str);
+function xPostFromTweet(tweet, fallbackId = "") {
+  const id = String(tweet?.id_str || fallbackId || "");
+  if (!id) throw new Error("X post id missing");
   return {
     platform: "x",
-    excerpt: normalizeText(tweet.text || baseTweet.text, 220),
-    time: formatTokyoDate(tweet.created_at || baseTweet.created_at) || "最新",
-    url: `https://x.com/${X_HANDLE}/status/${id}`,
-    thumbnail: mediaThumbnail(tweet) || mediaThumbnail(baseTweet) || "",
+    excerpt: normalizeText(tweet?.text, 220) || "Xの最新投稿をチェック。",
+    time: formatTokyoDate(tweet?.created_at) || "最新",
+    url: "https://x.com/" + X_HANDLE + "/status/" + id,
+    thumbnail: mediaThumbnail(tweet) || "",
   };
+}
+
+async function fetchLatestXFromYahoo() {
+  const q = encodeURIComponent("from:" + X_HANDLE);
+  const htmlRaw = await fetchText(
+    "https://search.yahoo.co.jp/realtime/search?p=" + q + "&ei=UTF-8"
+  );
+  const html = htmlRaw
+    .replace(/\\u002F/gi, "/")
+    .replace(/\\\//g, "/")
+    .replace(/&amp;/g, "&");
+
+  const re = new RegExp(
+    "https?:\\\\/\\\\/(?:x|twitter)\\\\.com\\\\/" +
+      X_HANDLE +
+      "\\\\/status\\\\/(\\\\d+)",
+    "gi"
+  );
+  const ids = [];
+  let m;
+  while ((m = re.exec(html))) ids.push(m[1]);
+
+  const relative = new RegExp(
+    "\\\\/" + X_HANDLE + "\\\\/status\\\\/(\\\\d+)",
+    "gi"
+  );
+  while ((m = relative.exec(html))) ids.push(m[1]);
+
+  const unique = [...new Set(ids)].filter((id) => /^\\d+$/.test(id));
+  if (!unique.length) throw new Error("Yahoo realtime returned no X post ids");
+
+  unique.sort((a, b) => {
+    const ai = BigInt(a);
+    const bi = BigInt(b);
+    return ai === bi ? 0 : ai > bi ? -1 : 1;
+  });
+
+  let lastErr;
+  for (const id of unique.slice(0, 8)) {
+    try {
+      const tweet = await hydrateTweetById(id);
+      if (
+        tweet &&
+        tweet.__typename !== "TweetTombstone" &&
+        String(tweet?.user?.screen_name || "").toLowerCase() ===
+          X_HANDLE.toLowerCase()
+      ) {
+        return xPostFromTweet(tweet, id);
+      }
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+
+  throw new Error(
+    "X tweet hydration failed after Yahoo lookup: " +
+      (lastErr?.message || "unknown")
+  );
+}
+
+async function fetchLatestX() {
+  try {
+    const timelineUrl =
+      "https://syndication.twitter.com/srv/timeline-profile/screen-name/" +
+      encodeURIComponent(X_HANDLE);
+    const html = await fetchText(timelineUrl);
+    const match = html.match(
+      /<script[^>]+id=["']__NEXT_DATA__["'][^>]*>([\s\S]*?)<\/script>/i
+    );
+    if (!match) throw new Error("X timeline __NEXT_DATA__ not found");
+
+    const nextData = JSON.parse(match[1]);
+    const baseTweet = newestTweet(findTweetCandidates(nextData));
+    if (!baseTweet) throw new Error("No X post found in timeline");
+
+    try {
+      const hydrated = await hydrateTweetById(String(baseTweet.id_str));
+      if (hydrated && hydrated.__typename !== "TweetTombstone") {
+        return xPostFromTweet(hydrated, baseTweet.id_str);
+      }
+    } catch (err) {
+      console.warn(
+        "X hydration failed; using timeline data:",
+        err?.message || err
+      );
+    }
+    return xPostFromTweet(baseTweet, baseTweet.id_str);
+  } catch (err) {
+    console.warn(
+      "X profile syndication failed; trying Yahoo realtime:",
+      err?.message || err
+    );
+  }
+
+  return await fetchLatestXFromYahoo();
 }
 
 async function main() {
