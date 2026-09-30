@@ -50,7 +50,24 @@
 <meta name="twitter:card" content="summary_large_image">
 
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="style.css?v=20260930-2016">
+<link rel="stylesheet" href="style.css?v=20260930-2050">
+<style>
+  /*
+    iPhoneのLINE / ChatGPT等のアプリ内ブラウザでは、
+    初回CSSアニメーションが開始されず opacity:0 のまま止まる場合がある。
+    ヒーローだけはアニメーションに依存せず常時表示する。
+  */
+  .hero-eyebrow,
+  .hero .orbit,
+  .hero .hero-tagline,
+  .hero .hero-sub,
+  .hero .hero-platforms,
+  .hero .hero-activity,
+  .hero .scroll-cue {
+    opacity: 1 !important;
+    animation: none !important;
+  }
+</style>
 </head>
 <body>
 
@@ -98,16 +115,3 @@
   <div class="mobile-meta">
     <a href="#follow-all" class="btn btn-primary" data-nav="allSnsMobile">ALL SNSをフォロー</a>
   </div>
-</nav>
-
-<main>
-
-  <!-- ============== ヒーロー ============== -->
-  <section class="hero">
-    <div class="hero-noise" aria-hidden="true"></div>
-
-    <p class="eyebrow hero-eyebrow" id="hero-eyebrow">OMIYA HOST CLUB</p>
-
-    <div class="orbit">
-      <svg viewBox="0 0 300 300" aria-hidden="true">
-        <g class="orbit-ring">
